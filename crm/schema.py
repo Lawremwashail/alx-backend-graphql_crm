@@ -1,12 +1,12 @@
 import re
 import graphene
 from graphene_django import DjangoObjectType
-from .models import Customer, Product, Order
 from django.db import transaction
 from django.utils import timezone
+from .models import Customer, Product, Order
 
 
-#TYPES
+# GRAPHQL TYPES 
 class CustomerType(DjangoObjectType):
     class Meta:
         model = Customer
@@ -25,7 +25,15 @@ class OrderType(DjangoObjectType):
         fields = ("id", "customer", "products", "total_amount", "order_date")
 
 
-#MUTATIONS
+# QUERY
+class Query(graphene.ObjectType):
+    all_customers = graphene.List(CustomerType)
+
+    def resolve_all_customers(root, info):
+        return Customer.objects.all()
+
+
+# MUTATIONS
 class CreateCustomer(graphene.Mutation):
     class Arguments:
         name = graphene.String(required=True)
@@ -130,22 +138,7 @@ class CreateOrder(graphene.Mutation):
         return CreateOrder(order=order)
 
 
-#ROOTS
-class CRMQuery(graphene.ObjectType):
-    customers = graphene.List(CustomerType)
-    products = graphene.List(ProductType)
-    orders = graphene.List(OrderType)
-
-    def resolve_customers(root, info):
-        return Customer.objects.all()
-
-    def resolve_products(root, info):
-        return Product.objects.all()
-
-    def resolve_orders(root, info):
-        return Order.objects.all()
-
-
+# ROOT MUTATION
 class Mutation(graphene.ObjectType):
     create_customer = CreateCustomer.Field()
     bulk_create_customers = BulkCreateCustomers.Field()
