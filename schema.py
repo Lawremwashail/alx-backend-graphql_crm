@@ -67,7 +67,8 @@ class CreateCustomer(graphene.Mutation):
         if errors:
             return CreateCustomer(customer=None, message="Validation failed", errors=errors)
 
-        customer = Customer.objects.create(name=name, email=email, phone=phone)
+        customer = Customer(name=name, email=email, phone=phone)
+        customer.save()
         return CreateCustomer(customer=customer, message="Customer created successfully", errors=[])
 
 
@@ -99,7 +100,8 @@ class BulkCreateCustomers(graphene.Mutation):
                 if data.phone and not re.match(r"^\+?\d[\d\-]{7,}$", data.phone):
                     raise ValueError(f"Invalid phone format for {data.email}")
 
-                c = Customer.objects.create(name=data.name, email=data.email, phone=data.phone)
+                c = Customer(name=data.name, email=data.email, phone=data.phone)
+                c.save()
                 created_customers.append(c)
 
             except Exception as e:
@@ -128,7 +130,8 @@ class CreateProduct(graphene.Mutation):
         if errors:
             return CreateProduct(product=None, errors=errors)
 
-        product = Product.objects.create(name=name, price=price, stock=stock)
+        product = Product(name=name, price=price, stock=stock)
+        product.save()
         return CreateProduct(product=product, errors=[])
 
 
@@ -165,11 +168,12 @@ class CreateOrder(graphene.Mutation):
         # Calculate total
         total_amount = sum(p.price for p in products)
 
-        order = Order.objects.create(
+        order = Order(
             customer=customer,
             total_amount=total_amount,
             order_date=order_date or timezone.now()
         )
+        order.save()
         order.products.set(products)
 
         return CreateOrder(order=order, errors=[])
