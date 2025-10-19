@@ -68,6 +68,7 @@ class CreateCustomer(graphene.Mutation):
             return CreateCustomer(customer=None, message="Validation failed", errors=errors)
 
         customer = Customer.objects.create(name=name, email=email, phone=phone)
+        customer.save()
         return CreateCustomer(customer=customer, message="Customer created successfully", errors=[])
 
 
@@ -101,6 +102,7 @@ class BulkCreateCustomers(graphene.Mutation):
 
                 c = Customer.objects.create(name=data.name, email=data.email, phone=data.phone)
                 created_customers.append(c)
+                c.save()
 
             except Exception as e:
                 errors.append(f"Row {i+1}: {str(e)}")
@@ -129,6 +131,7 @@ class CreateProduct(graphene.Mutation):
             return CreateProduct(product=None, errors=errors)
 
         product = Product.objects.create(name=name, price=price, stock=stock)
+        product.save()
         return CreateProduct(product=product, errors=[])
 
 
@@ -170,6 +173,7 @@ class CreateOrder(graphene.Mutation):
             total_amount=total_amount,
             order_date=order_date or timezone.now()
         )
+        order.save()
         order.products.set(products)
 
         return CreateOrder(order=order, errors=[])
